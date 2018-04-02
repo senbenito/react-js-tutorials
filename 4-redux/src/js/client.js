@@ -1,43 +1,47 @@
-import { applyMiddleware, createStore } from "redux";
-import axios from "axios";
-import logger from "redux-logger";
-import thunk from "redux-thunk";
-import promise from "redux-promise-middleware";
+import {combineReducers, createStore} from 'redux';
 
-const initialState = {
-  fetching: false,
-  fetched: false,
-  users: [],
-  error: null,
-};
+// const reducer = (state, action)=>{
+//   return action.type === 'INC' ? state + action.payload :
+//           action.type === 'DEC' ? state - action.payload :
+//           state
+// };
 
-const reducer = (state=initialState, action) => {
+const counterReducer = (state={}, action) => {
   switch (action.type) {
-    case "FETCH_USERS_PENDING": {
-      return {...state, fetching: true}
+    case "INC": {
+      state.counter += action.payload;
       break;
     }
-    case "FETCH_USERS_REJECTED": {
-      return {...state, fetching: false, error: action.payload}
-      break;
-    }
-    case "FETCH_USERS_FULFILLED": {
-      return {
-        ...state,
-        fetching: false,
-        fetched: true,
-        users: action.payload,
-      }
+    case "DEC": {
+      state.counter -= action.payload;
       break;
     }
   }
-  return state
-}
+  return state;
+};
 
-const middleware = applyMiddleware(promise(), thunk, logger())
-const store = createStore(reducer, middleware)
+const userReducer = (state={}, action) => {
+  return action.type === 'CHANGE_NAME' ?
+  state.name = action.payload
+  : state;
+};
 
-store.dispatch({
-  type: "FETCH_USERS",
-  payload: axios.get("http://rest.learncode.academy/api/wstern/users")
-})
+const postReducer = (state=[], action) => {
+  return state;
+};
+
+const reducers = combineReducers({
+  counter: counterReducer,
+  user: userReducer,
+  posts: postReducer
+});
+
+const store = createStore(reducers);
+
+store.subscribe(()=>{
+  console.log('store changed!', store.getState());
+});
+
+store.dispatch({type: 'INC', payload: 1});
+store.dispatch({type: 'CHANGE_NAME', payload: 'Shannon'})
+// store.dispatch({type: 'DEC', payload: 22});
